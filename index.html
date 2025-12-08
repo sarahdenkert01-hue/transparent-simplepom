@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Circle Gauge Focus Timer</title>
+
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: transparent !important;
+    font-family: "Inter", system-ui, sans-serif;
+  }
+
+  .timer-container {
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .label {
+    color: white;
+    font-size: 14px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  /* --- CIRCLE GAUGE --- */
+  .circle-wrapper {
+    width: 160px;
+    height: 160px;
+    position: relative;
+  }
+
+  svg {
+    transform: rotate(-90deg);
+  }
+
+  .bg-ring {
+    stroke: rgba(255, 255, 255, 0.25);
+    stroke-width: 10;
+  }
+
+  .progress-ring {
+    stroke: white;
+    stroke-width: 10;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.5s ease;
+  }
+
+  .time-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: white;
+    font-size: 28px;
+    font-weight: 600;
+  }
+
+  /* --- CONTROLS --- */
+  .controls {
+    display: flex;
+    gap: 8px;
+  }
+
+  button, input {
+    background: transparent;
+    color: white;
+    border: 1px solid rgba(255,255,255,0.6);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  button:hover, input:hover {
+    background: rgba(255,255,255,0.1);
+  }
+
+  input {
+    width: 50px;
+    text-align: center;
+  }
+
+  .status {
+    color: rgba(255,255,255,0.8);
+    font-size: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div class="timer-container">
+  <div class="label">Focus</div>
+
+  <div class="circle-wrapper">
+    <svg width="160" height="160">
+      <circle cx="80" cy="80" r="70" class="bg-ring" />
+      <circle cx="80" cy="80" r="70" class="progress-ring" />
+    </svg>
+
+    <div id="timeDisplay" class="time-text">25:00</div>
+  </div>
+
+  <div class="controls">
+    <button id="startPause">Start</button>
+    <button id="reset">Reset</button>
+  </div>
+
+  <div class="controls">
+    <input type="number" id="minutesInput" min="1" max="180" value="25" />
+    <button id="setBtn">Set</button>
+  </div>
+
+  <div id="status" class="status">Ready to focus</div>
+</div>
+
+<script>
+  const display = document.getElementById("timeDisplay");
+  const startPause = document.getElementById("startPause");
+  const resetBtn = document.getElementById("reset");
+  const minutesInput = document.getElementById("minutesInput");
+  const status = document.getElementById("status");
+  const setBtn = document.getElementById("setBtn");
+
+  const ring = document.querySelector(".progress-ring");
+  const radius = 70;
+  const circumference = 2 * Math.PI * radius;
+
+  ring.style.strokeDasharray = circumference;
+  ring.style.strokeDashoffset = circumference;
+
+  let totalSeconds = 25 * 60;
+  let remainingSeconds = totalSeconds;
+  let interval = null;
+  let running = false;
+
+  function formatTime(sec) {
+    const m = String(Math.floor(sec / 60)).padStart(2, "0");
+    const s = String(sec % 60).padStart(2, "0");
+    return `${m}:${s}`;
+  }
+
+  function updateDisplay() {
+    display.textContent = formatTime(remainingSeconds);
+  }
+
+  function updateGauge() {
+    const progress = remainingSeconds / totalSeconds;
+    const offset = circumference * (1 - progress);
+    ring.style.strokeDashoffset = offset;
+  }
+
+  function startTimer() {
+    if (running) return;
+    running = true;
+    status.textContent = "Focusing...";
+    startPause.textContent = "Pause";
+
+    interval = setInterval(() => {
+      remainingSeconds--;
+      if (remainingSeconds <= 0) {
+        remainingSeconds = 0;
+        clearInterval(interval);
+        running = false;
+        startPause.textContent = "Start";
+        status.textContent = "Session done ✨";
+      }
+      updateDisplay();
+      updateGauge();
+    }, 1000);
+  }
+
+  function pauseTimer() {
+    running = false;
+    clearInterval(interval);
+    startPause.textContent = "Start";
+    status.textContent = "Paused";
+  }
+
+  function resetTimer() {
+    running = false;
+    clearInterval(interval);
+    remainingSeconds = totalSeconds;
+    updateDisplay();
+    updateGauge();
+    startPause.textContent = "Start";
+    status.textContent = "Ready to focus";
+  }
+
+  function setTimer() {
+    const mins = parseInt(minutesInput.value);
+    if (!mins || mins < 1) return;
+
+    totalSeconds = mins * 60;
+    remainingSeconds = totalSeconds;
+    updateDisplay();
+    updateGauge();
+    status.textContent = `Timer set to ${mins} min`;
+  }
+
+  startPause.addEventListener("click", () => {
+    if (running) pauseTimer();
+    else startTimer();
+  });
+
+  resetBtn.addEventListener("click", resetTimer);
+  setBtn.addEventListener("click", setTimer);
+
+  updateDisplay();
+  updateGauge();
+</script>
+
+</body>
+</html>
