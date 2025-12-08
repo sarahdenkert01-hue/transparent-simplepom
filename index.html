@@ -1,222 +1,308 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Circle Gauge Focus Timer</title>
-
-<style>
-  body {
-    margin: 0;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: transparent !important;
-    font-family: "Inter", system-ui, sans-serif;
-  }
-
-  .timer-container {
-    background: transparent;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .label {
-    color: white;
-    font-size: 14px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-  }
-
-  /* --- CIRCLE GAUGE --- */
-  .circle-wrapper {
-    width: 160px;
-    height: 160px;
-    position: relative;
-  }
-
-  svg {
-    transform: rotate(-90deg);
-  }
-
-  .bg-ring {
-    stroke: rgba(255, 255, 255, 0.25);
-    stroke-width: 10;
-  }
-
-  .progress-ring {
-    stroke: white;
-    stroke-width: 10;
-    stroke-linecap: round;
-    transition: stroke-dashoffset 0.5s ease;
-  }
-
-  .time-text {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: white;
-    font-size: 28px;
-    font-weight: 600;
-  }
-
-  /* --- CONTROLS --- */
-  .controls {
-    display: flex;
-    gap: 8px;
-  }
-
-  button, input {
-    background: transparent;
-    color: white;
-    border: 1px solid rgba(255,255,255,0.6);
-    border-radius: 8px;
-    padding: 6px 12px;
-    font-size: 12px;
-    cursor: pointer;
-  }
-
-  button:hover, input:hover {
-    background: rgba(255,255,255,0.1);
-  }
-
-  input {
-    width: 50px;
-    text-align: center;
-  }
-
-  .status {
-    color: rgba(255,255,255,0.8);
-    font-size: 12px;
-  }
-</style>
-</head>
-<body>
-
-<div class="timer-container">
-  <div class="label">Focus</div>
-
-  <div class="circle-wrapper">
-    <svg width="160" height="160">
-      <circle cx="80" cy="80" r="70" class="bg-ring" />
-      <circle cx="80" cy="80" r="70" class="progress-ring" />
-    </svg>
-
-    <div id="timeDisplay" class="time-text">25:00</div>
-  </div>
-
-  <div class="controls">
-    <button id="startPause">Start</button>
-    <button id="reset">Reset</button>
-  </div>
-
-  <div class="controls">
-    <input type="number" id="minutesInput" min="1" max="180" value="25" />
-    <button id="setBtn">Set</button>
-  </div>
-
-  <div id="status" class="status">Ready to focus</div>
-</div>
-
-<script>
-  const display = document.getElementById("timeDisplay");
-  const startPause = document.getElementById("startPause");
-  const resetBtn = document.getElementById("reset");
-  const minutesInput = document.getElementById("minutesInput");
-  const status = document.getElementById("status");
-  const setBtn = document.getElementById("setBtn");
-
-  const ring = document.querySelector(".progress-ring");
-  const radius = 70;
-  const circumference = 2 * Math.PI * radius;
-
-  ring.style.strokeDasharray = circumference;
-  ring.style.strokeDashoffset = circumference;
-
-  let totalSeconds = 25 * 60;
-  let remainingSeconds = totalSeconds;
-  let interval = null;
-  let running = false;
-
-  function formatTime(sec) {
-    const m = String(Math.floor(sec / 60)).padStart(2, "0");
-    const s = String(sec % 60).padStart(2, "0");
-    return `${m}:${s}`;
-  }
-
-  function updateDisplay() {
-    display.textContent = formatTime(remainingSeconds);
-  }
-
-  function updateGauge() {
-    const progress = remainingSeconds / totalSeconds;
-    const offset = circumference * (1 - progress);
-    ring.style.strokeDashoffset = offset;
-  }
-
-  function startTimer() {
-    if (running) return;
-    running = true;
-    status.textContent = "Focusing...";
-    startPause.textContent = "Pause";
-
-    interval = setInterval(() => {
-      remainingSeconds--;
-      if (remainingSeconds <= 0) {
-        remainingSeconds = 0;
-        clearInterval(interval);
-        running = false;
-        startPause.textContent = "Start";
-        status.textContent = "Session done ✨";
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Focus Timer</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+    }
+    
+    @keyframes pulse-ring {
+      0% {
+        transform: scale(0.95);
+        opacity: 1;
       }
+      50% {
+        transform: scale(1.05);
+        opacity: 0.7;
+      }
+      100% {
+        transform: scale(0.95);
+        opacity: 1;
+      }
+    }
+    
+    .timer-active {
+      animation: pulse-ring 2s ease-in-out infinite;
+    }
+  </style>
+  <style>@view-transition { navigation: auto; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app" class="w-full h-full flex items-center justify-center p-8 overflow-auto">
+   <div class="text-center max-w-md w-full"><!-- Timer Title -->
+    <h1 id="timer-title" class="text-4xl font-bold mb-12 text-white">Focus Session</h1><!-- Circular Timer Display -->
+    <div class="relative inline-block mb-12">
+     <svg class="transform -rotate-90" width="280" height="280"><!-- Background circle --> <circle cx="140" cy="140" r="120" stroke="rgba(255, 255, 255, 0.2)" stroke-width="12" fill="none" /> <!-- Progress circle --> <circle id="progress-circle" cx="140" cy="140" r="120" stroke="#ffffff" stroke-width="12" fill="none" class="transition-all duration-300" stroke-dasharray="754" stroke-dashoffset="0" stroke-linecap="round" />
+     </svg><!-- Time Display -->
+     <div class="absolute inset-0 flex items-center justify-center">
+      <div class="text-center">
+       <div id="time-display" class="text-6xl font-bold text-white">
+        25:00
+       </div>
+       <div id="status-text" class="text-sm text-white mt-2" style="opacity: 0.8;">
+        Ready to focus
+       </div>
+      </div>
+     </div>
+    </div><!-- Time Preset Buttons -->
+    <div class="flex gap-3 justify-center mb-8"><button id="preset-15" class="px-4 py-2 rounded-lg transition-colors text-sm font-medium text-white" style="background-color: rgba(255, 255, 255, 0.2);"> 15 min </button> <button id="preset-25" class="px-4 py-2 rounded-lg transition-colors text-sm font-medium text-white" style="background-color: rgba(255, 255, 255, 0.4);"> 25 min </button> <button id="preset-45" class="px-4 py-2 rounded-lg transition-colors text-sm font-medium text-white" style="background-color: rgba(255, 255, 255, 0.2);"> 45 min </button>
+    </div><!-- Control Buttons -->
+    <div class="flex gap-4 justify-center"><button id="start-btn" class="px-8 py-3 rounded-lg text-white transition-colors font-semibold text-lg shadow-lg" style="background-color: rgba(255, 255, 255, 0.3);"> Start </button> <button id="pause-btn" class="px-8 py-3 rounded-lg text-white transition-colors font-semibold text-lg shadow-lg hidden" style="background-color: rgba(255, 255, 255, 0.3);"> Pause </button> <button id="reset-btn" class="px-6 py-3 rounded-lg text-white transition-colors font-semibold text-lg" style="background-color: rgba(255, 255, 255, 0.2);"> Reset </button>
+    </div>
+   </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      timer_title: "Focus Session",
+      start_button_text: "Start",
+      pause_button_text: "Pause",
+      reset_button_text: "Reset",
+      primary_color: "#ffffff",
+      secondary_color: "#ffffff",
+      text_color: "#ffffff",
+      button_bg: "rgba(255, 255, 255, 0.2)",
+      circle_bg: "rgba(255, 255, 255, 0.1)"
+    };
+
+    let timerInterval = null;
+    let totalSeconds = 25 * 60;
+    let remainingSeconds = totalSeconds;
+    let isRunning = false;
+    const circumference = 2 * Math.PI * 120;
+
+    const timeDisplay = document.getElementById('time-display');
+    const statusText = document.getElementById('status-text');
+    const progressCircle = document.getElementById('progress-circle');
+    const startBtn = document.getElementById('start-btn');
+    const pauseBtn = document.getElementById('pause-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const preset15 = document.getElementById('preset-15');
+    const preset25 = document.getElementById('preset-25');
+    const preset45 = document.getElementById('preset-45');
+
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = seconds % 60;
+      return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function updateDisplay() {
+      timeDisplay.textContent = formatTime(remainingSeconds);
+      const progress = remainingSeconds / totalSeconds;
+      const offset = circumference * (1 - progress);
+      progressCircle.style.strokeDashoffset = offset;
+    }
+
+    function startTimer() {
+      if (isRunning) return;
+      isRunning = true;
+      startBtn.classList.add('hidden');
+      pauseBtn.classList.remove('hidden');
+      statusText.textContent = 'Focus time! 🎯';
+      progressCircle.parentElement.classList.add('timer-active');
+      
+      timerInterval = setInterval(() => {
+        if (remainingSeconds > 0) {
+          remainingSeconds--;
+          updateDisplay();
+        } else {
+          stopTimer();
+          statusText.textContent = 'Time\'s up! Great work! 🎉';
+        }
+      }, 1000);
+    }
+
+    function pauseTimer() {
+      if (!isRunning) return;
+      isRunning = false;
+      clearInterval(timerInterval);
+      startBtn.classList.remove('hidden');
+      pauseBtn.classList.add('hidden');
+      statusText.textContent = 'Paused';
+      progressCircle.parentElement.classList.remove('timer-active');
+    }
+
+    function stopTimer() {
+      isRunning = false;
+      clearInterval(timerInterval);
+      startBtn.classList.remove('hidden');
+      pauseBtn.classList.add('hidden');
+      progressCircle.parentElement.classList.remove('timer-active');
+    }
+
+    function resetTimer() {
+      stopTimer();
+      remainingSeconds = totalSeconds;
       updateDisplay();
-      updateGauge();
-    }, 1000);
-  }
+      statusText.textContent = 'Ready to focus';
+    }
 
-  function pauseTimer() {
-    running = false;
-    clearInterval(interval);
-    startPause.textContent = "Start";
-    status.textContent = "Paused";
-  }
+    function setPreset(minutes) {
+      stopTimer();
+      totalSeconds = minutes * 60;
+      remainingSeconds = totalSeconds;
+      updateDisplay();
+      statusText.textContent = 'Ready to focus';
+      
+      // Update active preset button styling
+      const inactiveClass = 'px-4 py-2 rounded-lg transition-colors text-sm font-medium text-white';
+      const activeClass = 'px-4 py-2 rounded-lg transition-colors text-sm font-medium text-white';
+      
+      [preset15, preset25, preset45].forEach(btn => {
+        btn.className = inactiveClass;
+        btn.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+      });
+      
+      if (minutes === 15) {
+        preset15.className = activeClass;
+        preset15.style.backgroundColor = 'rgba(255, 255, 255, 0.4)';
+      } else if (minutes === 25) {
+        preset25.className = activeClass;
+        preset25.style.backgroundColor = 'rgba(255, 255, 255, 0.4)';
+      } else if (minutes === 45) {
+        preset45.className = activeClass;
+        preset45.style.backgroundColor = 'rgba(255, 255, 255, 0.4)';
+      }
+    }
 
-  function resetTimer() {
-    running = false;
-    clearInterval(interval);
-    remainingSeconds = totalSeconds;
+    startBtn.addEventListener('click', startTimer);
+    pauseBtn.addEventListener('click', pauseTimer);
+    resetBtn.addEventListener('click', resetTimer);
+    preset15.addEventListener('click', () => setPreset(15));
+    preset25.addEventListener('click', () => setPreset(25));
+    preset45.addEventListener('click', () => setPreset(45));
+
+    async function onConfigChange(config) {
+      const timerTitle = document.getElementById('timer-title');
+      const customFont = config.font_family || defaultConfig.font_family;
+      const baseFontStack = 'system-ui, -apple-system, sans-serif';
+      const baseSize = config.font_size || 16;
+      
+      // Update text content
+      timerTitle.textContent = config.timer_title || defaultConfig.timer_title;
+      startBtn.textContent = config.start_button_text || defaultConfig.start_button_text;
+      pauseBtn.textContent = config.pause_button_text || defaultConfig.pause_button_text;
+      resetBtn.textContent = config.reset_button_text || defaultConfig.reset_button_text;
+      
+      // Apply colors
+      const primaryColor = config.primary_color || defaultConfig.primary_color;
+      const secondaryColor = config.secondary_color || defaultConfig.secondary_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+      const buttonBg = config.button_bg || defaultConfig.button_bg;
+      const circleBg = config.circle_bg || defaultConfig.circle_bg;
+      
+      timerTitle.style.color = textColor;
+      timeDisplay.style.color = textColor;
+      statusText.style.color = textColor;
+      progressCircle.style.stroke = primaryColor;
+      
+      startBtn.style.backgroundColor = primaryColor;
+      pauseBtn.style.backgroundColor = secondaryColor;
+      resetBtn.style.backgroundColor = buttonBg;
+      
+      preset15.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+      preset15.style.color = 'white';
+      preset25.style.backgroundColor = 'rgba(255, 255, 255, 0.4)';
+      preset25.style.color = 'white';
+      preset45.style.backgroundColor = 'rgba(255, 255, 255, 0.2)';
+      preset45.style.color = 'white';
+      
+      // Apply fonts
+      if (customFont) {
+        timerTitle.style.fontFamily = `${customFont}, ${baseFontStack}`;
+        timeDisplay.style.fontFamily = `${customFont}, ${baseFontStack}`;
+        statusText.style.fontFamily = `${customFont}, ${baseFontStack}`;
+        startBtn.style.fontFamily = `${customFont}, ${baseFontStack}`;
+        pauseBtn.style.fontFamily = `${customFont}, ${baseFontStack}`;
+        resetBtn.style.fontFamily = `${customFont}, ${baseFontStack}`;
+      }
+      
+      // Apply font sizes
+      timerTitle.style.fontSize = `${baseSize * 2.25}px`;
+      timeDisplay.style.fontSize = `${baseSize * 3.75}px`;
+      statusText.style.fontSize = `${baseSize * 0.875}px`;
+      startBtn.style.fontSize = `${baseSize * 1.125}px`;
+      pauseBtn.style.fontSize = `${baseSize * 1.125}px`;
+      resetBtn.style.fontSize = `${baseSize * 1.125}px`;
+    }
+
+    // Initialize Element SDK
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig,
+        onConfigChange,
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => config.primary_color || defaultConfig.primary_color,
+              set: (value) => {
+                config.primary_color = value;
+                window.elementSdk.setConfig({ primary_color: value });
+              }
+            },
+            {
+              get: () => config.secondary_color || defaultConfig.secondary_color,
+              set: (value) => {
+                config.secondary_color = value;
+                window.elementSdk.setConfig({ secondary_color: value });
+              }
+            },
+            {
+              get: () => config.text_color || defaultConfig.text_color,
+              set: (value) => {
+                config.text_color = value;
+                window.elementSdk.setConfig({ text_color: value });
+              }
+            },
+            {
+              get: () => config.button_bg || defaultConfig.button_bg,
+              set: (value) => {
+                config.button_bg = value;
+                window.elementSdk.setConfig({ button_bg: value });
+              }
+            },
+            {
+              get: () => config.circle_bg || defaultConfig.circle_bg,
+              set: (value) => {
+                config.circle_bg = value;
+                window.elementSdk.setConfig({ circle_bg: value });
+              }
+            }
+          ],
+          borderables: [],
+          fontEditable: {
+            get: () => config.font_family || defaultConfig.font_family,
+            set: (value) => {
+              config.font_family = value;
+              window.elementSdk.setConfig({ font_family: value });
+            }
+          },
+          fontSizeable: {
+            get: () => config.font_size || 16,
+            set: (value) => {
+              config.font_size = value;
+              window.elementSdk.setConfig({ font_size: value });
+            }
+          }
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ["timer_title", config.timer_title || defaultConfig.timer_title],
+          ["start_button_text", config.start_button_text || defaultConfig.start_button_text],
+          ["pause_button_text", config.pause_button_text || defaultConfig.pause_button_text],
+          ["reset_button_text", config.reset_button_text || defaultConfig.reset_button_text]
+        ])
+      });
+      
+      onConfigChange(window.elementSdk.config);
+    }
+
     updateDisplay();
-    updateGauge();
-    startPause.textContent = "Start";
-    status.textContent = "Ready to focus";
-  }
-
-  function setTimer() {
-    const mins = parseInt(minutesInput.value);
-    if (!mins || mins < 1) return;
-
-    totalSeconds = mins * 60;
-    remainingSeconds = totalSeconds;
-    updateDisplay();
-    updateGauge();
-    status.textContent = `Timer set to ${mins} min`;
-  }
-
-  startPause.addEventListener("click", () => {
-    if (running) pauseTimer();
-    else startTimer();
-  });
-
-  resetBtn.addEventListener("click", resetTimer);
-  setBtn.addEventListener("click", setTimer);
-
-  updateDisplay();
-  updateGauge();
-</script>
-
-</body>
+  </script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9aad6acb13e0230f',t:'MTc2NTIwOTAxMy4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
