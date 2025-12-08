@@ -3,9 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Comfortaa Focus Timer</title>
+<title>Focus Timer with Progress Ring</title>
 
-<!-- Import Comfortaa -->
+<!-- Comfortaa Font -->
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;600;700&display=swap" rel="stylesheet">
 
 <style>
@@ -21,24 +21,50 @@
 
   .timer-container {
     text-align: center;
-    background: transparent !important;
+    background: transparent;
+  }
+
+  /* CIRCLE WRAPPER */
+  .circle-wrapper {
+    width: 200px;
+    height: 200px;
+    position: relative;
+    margin-bottom: 20px;
+  }
+
+  svg {
+    transform: rotate(-90deg);
+  }
+
+  .bg-ring {
+    stroke: rgba(255, 255, 255, 0.25);
+    stroke-width: 10;
+  }
+
+  .progress-ring {
+    stroke: white;
+    stroke-width: 10;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.4s ease;
   }
 
   /* TIMER TEXT */
-  #time {
-    font-size: 72px;
+  .time-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 58px;
     font-weight: 700;
     color: white;
-    margin-bottom: 10px;
     letter-spacing: 2px;
   }
 
-  /* LABEL */
   .label {
-    font-size: 22px;
+    font-size: 20px;
     letter-spacing: 0.18em;
     color: rgba(255, 255, 255, 0.9);
-    margin-bottom: 22px;
+    margin-bottom: 25px;
   }
 
   /* BUTTONS */
@@ -57,7 +83,7 @@
     background: transparent;
     color: white;
     border: 2px solid white;
-    transition: 0.2s ease;
+    transition: 0.2s;
     font-family: "Comfortaa", sans-serif;
   }
 
@@ -70,10 +96,20 @@
   }
 </style>
 </head>
+
 <body>
 
 <div class="timer-container">
-  <div id="time">25:00</div>
+
+  <div class="circle-wrapper">
+    <svg width="200" height="200">
+      <circle cx="100" cy="100" r="85" class="bg-ring"></circle>
+      <circle cx="100" cy="100" r="85" class="progress-ring"></circle>
+    </svg>
+
+    <div id="time" class="time-text">25:00</div>
+  </div>
+
   <div class="label">FOCUS</div>
 
   <div class="btn-row">
@@ -81,9 +117,17 @@
     <button id="pauseBtn">PAUSE</button>
     <button id="resetBtn">RESET</button>
   </div>
+
 </div>
 
 <script>
+  const radius = 85;
+  const circumference = 2 * Math.PI * radius;
+
+  const ring = document.querySelector(".progress-ring");
+  ring.style.strokeDasharray = circumference;
+  ring.style.strokeDashoffset = circumference;
+
   let totalSeconds = 25 * 60;
   let remaining = totalSeconds;
   let interval = null;
@@ -100,8 +144,14 @@
     return `${m}:${s}`;
   }
 
-  function update() {
+  function updateDisplay() {
     timeEl.textContent = format(remaining);
+  }
+
+  function updateRing() {
+    const progress = remaining / totalSeconds;
+    const offset = circumference * (1 - progress);
+    ring.style.strokeDashoffset = offset;
   }
 
   function tick() {
@@ -112,19 +162,20 @@
       running = false;
       startBtn.textContent = "START";
     }
-    update();
+    updateDisplay();
+    updateRing();
   }
 
   function startTimer() {
     clearInterval(interval);
     interval = setInterval(tick, 1000);
     running = true;
-    startBtn.textContent = "RESTART";
   }
 
   startBtn.addEventListener("click", () => {
     remaining = totalSeconds;
-    update();
+    updateDisplay();
+    updateRing();
     startTimer();
   });
 
@@ -139,11 +190,13 @@
     clearInterval(interval);
     remaining = totalSeconds;
     running = false;
-    update();
+    updateDisplay();
+    updateRing();
     startBtn.textContent = "START";
   });
 
-  update();
+  updateDisplay();
+  updateRing();
 </script>
 
 </body>
