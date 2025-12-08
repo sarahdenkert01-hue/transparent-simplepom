@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Focus Timer with Progress Ring</title>
+<title>Focus Timer with Transparent Progress Ring</title>
 
 <!-- Comfortaa Font -->
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -36,11 +36,13 @@
     transform: rotate(-90deg);
   }
 
+  /* BACKGROUND RING — NOW FULLY INVISIBLE */
   .bg-ring {
-    stroke: rgba(255, 255, 255, 0.25);
+    stroke: transparent;
     stroke-width: 10;
   }
 
+  /* WHITE PROGRESS RING */
   .progress-ring {
     stroke: white;
     stroke-width: 10;
