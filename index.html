@@ -40,24 +40,24 @@
  <body class="h-full">
   <div id="app" class="w-full h-full flex items-center justify-center p-8 overflow-auto">
    <div class="text-center max-w-md w-full"><!-- Timer Title -->
-    <h1 id="timer-title" class="text-2xl font-bold mb-6 text-white">Focus Session</h1><!-- Circular Timer Display -->
-    <div class="relative inline-block mb-6">
-     <svg class="transform -rotate-90" width="200" height="200"><!-- Background circle - transparent --> <circle cx="100" cy="100" r="85" stroke="transparent" stroke-width="8" fill="none" /> <!-- Progress circle - white --> <circle id="progress-circle" cx="100" cy="100" r="85" stroke="#ffffff" stroke-width="8" fill="none" class="transition-all duration-300" stroke-dasharray="534" stroke-dashoffset="0" stroke-linecap="round" />
+    <h1 id="timer-title" class="text-lg font-bold mb-3 text-white">Focus Session</h1><!-- Circular Timer Display -->
+    <div class="relative inline-block mb-3">
+     <svg class="transform -rotate-90" width="140" height="140"><!-- Background circle - transparent --> <circle cx="70" cy="70" r="60" stroke="transparent" stroke-width="6" fill="none" /> <!-- Progress circle - white --> <circle id="progress-circle" cx="70" cy="70" r="60" stroke="#ffffff" stroke-width="6" fill="none" class="transition-all duration-300" stroke-dasharray="377" stroke-dashoffset="0" stroke-linecap="round" />
      </svg><!-- Time Display -->
      <div class="absolute inset-0 flex items-center justify-center">
       <div class="text-center">
-       <div id="time-display" class="text-4xl font-bold text-white">
+       <div id="time-display" class="text-2xl font-bold text-white">
         25:00
        </div>
-       <div id="status-text" class="text-xs text-white mt-1" style="opacity: 0.8;">
+       <div id="status-text" class="text-xs text-white mt-0.5" style="opacity: 0.8;">
         Ready to focus
        </div>
       </div>
      </div>
     </div><!-- Time Preset Buttons -->
-    <div class="flex gap-2 justify-center mb-4"><button id="preset-15" class="px-3 py-1 rounded-lg transition-colors text-xs font-medium text-white" style="background-color: transparent; border: 2px solid rgba(255, 255, 255, 0.4);"> 15 min </button> <button id="preset-25" class="px-3 py-1 rounded-lg transition-colors text-xs font-medium text-white" style="background-color: transparent; border: 2px solid rgba(255, 255, 255, 1);"> 25 min </button> <button id="preset-45" class="px-3 py-1 rounded-lg transition-colors text-xs font-medium text-white" style="background-color: transparent; border: 2px solid rgba(255, 255, 255, 0.4);"> 45 min </button>
+    <div class="flex gap-1.5 justify-center mb-3"><button id="preset-15" class="px-2 py-0.5 rounded transition-colors text-xs font-medium text-white" style="background-color: transparent; border: 1.5px solid rgba(255, 255, 255, 0.4);"> 15 min </button> <button id="preset-25" class="px-2 py-0.5 rounded transition-colors text-xs font-medium text-white" style="background-color: transparent; border: 1.5px solid rgba(255, 255, 255, 1);"> 25 min </button> <button id="preset-45" class="px-2 py-0.5 rounded transition-colors text-xs font-medium text-white" style="background-color: transparent; border: 1.5px solid rgba(255, 255, 255, 0.4);"> 45 min </button>
     </div><!-- Control Buttons -->
-    <div class="flex gap-2 justify-center"><button id="start-btn" class="px-5 py-2 rounded-lg text-white transition-colors font-semibold text-sm shadow-lg" style="background-color: transparent; border: 2px solid white;"> Start </button> <button id="pause-btn" class="px-5 py-2 rounded-lg text-white transition-colors font-semibold text-sm shadow-lg hidden" style="background-color: transparent; border: 2px solid white;"> Pause </button> <button id="reset-btn" class="px-4 py-2 rounded-lg text-white transition-colors font-semibold text-sm" style="background-color: transparent; border: 2px solid rgba(255, 255, 255, 0.6);"> Reset </button>
+    <div class="flex gap-1.5 justify-center"><button id="start-btn" class="px-4 py-1.5 rounded text-white transition-colors font-semibold text-xs shadow-lg" style="background-color: transparent; border: 1.5px solid white;"> Start </button> <button id="pause-btn" class="px-4 py-1.5 rounded text-white transition-colors font-semibold text-xs shadow-lg hidden" style="background-color: transparent; border: 1.5px solid white;"> Pause </button> <button id="reset-btn" class="px-3 py-1.5 rounded text-white transition-colors font-semibold text-xs" style="background-color: transparent; border: 1.5px solid rgba(255, 255, 255, 0.6);"> Reset </button>
     </div>
    </div>
   </div>
@@ -78,7 +78,7 @@
     let totalSeconds = 25 * 60;
     let remainingSeconds = totalSeconds;
     let isRunning = false;
-    const circumference = 2 * Math.PI * 85;
+    const circumference = 2 * Math.PI * 60;
 
     const timeDisplay = document.getElementById('time-display');
     const statusText = document.getElementById('status-text');
@@ -155,20 +155,20 @@
       statusText.textContent = 'Ready to focus';
       
       // Update active preset button styling
-      const buttonClass = 'px-3 py-1 rounded-lg transition-colors text-xs font-medium text-white';
+      const buttonClass = 'px-2 py-0.5 rounded transition-colors text-xs font-medium text-white';
       
       [preset15, preset25, preset45].forEach(btn => {
         btn.className = buttonClass;
         btn.style.backgroundColor = 'transparent';
-        btn.style.border = '2px solid rgba(255, 255, 255, 0.4)';
+        btn.style.border = '1.5px solid rgba(255, 255, 255, 0.4)';
       });
       
       if (minutes === 15) {
-        preset15.style.border = '2px solid rgba(255, 255, 255, 1)';
+        preset15.style.border = '1.5px solid rgba(255, 255, 255, 1)';
       } else if (minutes === 25) {
-        preset25.style.border = '2px solid rgba(255, 255, 255, 1)';
+        preset25.style.border = '1.5px solid rgba(255, 255, 255, 1)';
       } else if (minutes === 45) {
-        preset45.style.border = '2px solid rgba(255, 255, 255, 1)';
+        preset45.style.border = '1.5px solid rgba(255, 255, 255, 1)';
       }
     }
 
@@ -204,21 +204,21 @@
       progressCircle.style.stroke = primaryColor;
       
       startBtn.style.backgroundColor = 'transparent';
-      startBtn.style.border = `2px solid ${primaryColor}`;
+      startBtn.style.border = `1.5px solid ${primaryColor}`;
       pauseBtn.style.backgroundColor = 'transparent';
-      pauseBtn.style.border = `2px solid ${secondaryColor}`;
+      pauseBtn.style.border = `1.5px solid ${secondaryColor}`;
       resetBtn.style.backgroundColor = 'transparent';
-      resetBtn.style.border = `2px solid rgba(255, 255, 255, 0.6)`;
+      resetBtn.style.border = `1.5px solid rgba(255, 255, 255, 0.6)`;
       
       preset15.style.backgroundColor = 'transparent';
       preset15.style.color = 'white';
-      preset15.style.border = '2px solid rgba(255, 255, 255, 0.4)';
+      preset15.style.border = '1.5px solid rgba(255, 255, 255, 0.4)';
       preset25.style.backgroundColor = 'transparent';
       preset25.style.color = 'white';
-      preset25.style.border = '2px solid rgba(255, 255, 255, 1)';
+      preset25.style.border = '1.5px solid rgba(255, 255, 255, 1)';
       preset45.style.backgroundColor = 'transparent';
       preset45.style.color = 'white';
-      preset45.style.border = '2px solid rgba(255, 255, 255, 0.4)';
+      preset45.style.border = '1.5px solid rgba(255, 255, 255, 0.4)';
       
       // Apply fonts
       if (customFont) {
@@ -231,12 +231,12 @@
       }
       
       // Apply font sizes
-      timerTitle.style.fontSize = `${baseSize * 1.5}px`;
-      timeDisplay.style.fontSize = `${baseSize * 2.5}px`;
+      timerTitle.style.fontSize = `${baseSize * 1.125}px`;
+      timeDisplay.style.fontSize = `${baseSize * 1.5}px`;
       statusText.style.fontSize = `${baseSize * 0.75}px`;
-      startBtn.style.fontSize = `${baseSize * 0.875}px`;
-      pauseBtn.style.fontSize = `${baseSize * 0.875}px`;
-      resetBtn.style.fontSize = `${baseSize * 0.875}px`;
+      startBtn.style.fontSize = `${baseSize * 0.75}px`;
+      pauseBtn.style.fontSize = `${baseSize * 0.75}px`;
+      resetBtn.style.fontSize = `${baseSize * 0.75}px`;
     }
 
     // Initialize Element SDK
@@ -311,5 +311,5 @@
 
     updateDisplay();
   </script>
- <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab0aa905490230f',t:'MTc2NTI0MzA4Mi4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ab0cb6c40c59d4a',t:'MTc2NTI0NDQyOC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
