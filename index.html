@@ -3,19 +3,19 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Focus Timer with Transparent Progress Ring</title>
+<title>Focus Timer</title>
 
-<!-- Comfortaa Font -->
+<!-- Comfortaa -->
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;600;700&display=swap" rel="stylesheet">
 
 <style>
   body {
     margin: 0;
     height: 100vh;
+    background: transparent !important;
     display: flex;
     justify-content: center;
     align-items: center;
-    background: transparent !important;
     font-family: "Comfortaa", sans-serif;
   }
 
@@ -27,20 +27,12 @@
     align-items: center;
   }
 
-  /* CIRCLE WRAPPER */
   .circle-wrapper {
     width: 220px;
     height: 220px;
     position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     margin-bottom: 20px;
   }
 
   svg {
     width: 220px;
-    height: 220px;
-    transform: rotate(-90deg);
-    overflow: visible;
-  }
